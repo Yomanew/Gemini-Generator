@@ -33,22 +33,26 @@ const ErrorDisplay = ({ onRetry }) => (
 // --- Main App Component ---
 
 export default function App() {
-    // Initial state for all the recipes with their titles and image generation prompts
+    // Initial state for all the Small Garden Landscape ideas
     const [recipes, setRecipes] = useState([
-        { title: "Choose the Right Spot", prompt: "A candid photo of a sunny backyard with a person thoughtfully pointing to the perfect, sun-drenched spot for a new vegetable garden. The image has warm, natural lighting, conveying a sense of planning and potential. Looks like a real moment captured for a gardening blog.", imageUrl: null, loading: false, error: false },
-        { title: "Know Your Growing Zone", prompt: "A close-up, top-down shot of a person's hands holding a smartphone displaying a USDA Hardiness Zone map. On the rustic wooden table are several seed packets. The feel is authentic and practical, like a real gardener planning their season. Instagram-style.", imageUrl: null, loading: false, error: false },
-        { title: "Pick Your Layout Style", prompt: "A visually appealing, collage-style image showing four distinct garden layouts. A neat traditional row garden, a beautiful wooden raised bed, a gridded square foot garden, and some vibrant container pots on a patio. The photo looks like an informative social media post.", imageUrl: null, loading: false, error: false },
-        { title: "Sketch It Out First", prompt: "A flat lay of a hand-drawn garden plan on graph paper. A pencil, an eraser, and a few seed packets are scattered around the paper on a wooden table. It looks like a genuine, creative planning session captured from above.", imageUrl: null, loading: false, error: false },
-        { title: "Use Companion Planting", prompt: "A close-up shot from inside a thriving garden bed, showing lush tomato plants growing happily next to bushy basil plants. The lighting is bright and natural, highlighting the healthy leaves. This looks like a real-life example from a gardener's social media feed.", imageUrl: null, loading: false, error: false },
-        { title: "Mind the Spacing", prompt: "A real-world photo looking down a row of young lettuce plants that are perfectly spaced, with rich, dark soil visible between them. The image clearly illustrates the concept of giving plants room to grow, as if taken by a proud gardener on their phone.", imageUrl: null, loading: false, error: false },
-        { title: "Group by Watering Needs", prompt: "A practical shot of a garden bed where one side has thirsty leafy greens like lettuce and spinach, looking moist, while the other side has more drought-tolerant herbs like rosemary and thyme. A watering can is placed near the thirsty plants. Looks like a smart, real-life garden setup.", imageUrl: null, loading: false, error: false },
-        { title: "Plan for Crop Rotation", prompt: "An image of a rustic, open garden journal on a potting bench. The page shows a hand-drawn diagram and notes about crop rotation for the upcoming seasons. Feels authentic, personal, and educational, like a tip shared in a gardening group.", imageUrl: null, loading: false, error: false },
-        { title: "Add Paths for Easy Access", prompt: "A beautiful, real-life garden with inviting wood chip paths between several raised beds filled with thriving vegetables. A person is comfortably kneeling on the path, tending to the plants. The image feels accessible and well-designed, captured on a sunny day.", imageUrl: null, loading: false, error: false },
-        { title: "Leave Room to Grow", prompt: "A wide shot of a well-maintained vegetable garden with an empty, prepared plot of land adjacent to it, suggesting future expansion. In the background, a compost bin is visible. The scene looks hopeful and full of potential, like a real backyard project in progress.", imageUrl: null, loading: false, error: false }
+        { title: "Use Vertical Gardening to Save Space", prompt: "A real-life photo of a small balcony with a rustic wooden pallet repurposed as a vertical garden, filled with lush herbs and trailing strawberries. The shot looks like a clever, space-saving solution from a genuine urban gardener's Instagram.", imageUrl: null, loading: false, error: false },
+        { title: "Choose a Cohesive Color Palette", prompt: "A beautiful, real garden bed in a small space, planted with a cohesive palette of blue and purple flowers like salvia and lavender. The effect is calming and visually expansive. Looks like an authentic photo from a gardening social media feed.", imageUrl: null, loading: false, error: false },
+        { title: "Define Zones with Edging or Pavers", prompt: "A small backyard with a winding gravel path that cleverly separates a tiny lawn area from a flower bed. The curved lines make the space feel larger and more dynamic. The shot is a real-life example of smart small-garden design.", imageUrl: null, loading: false, error: false },
+        { title: "Add a Statement Plant or Water Feature", prompt: "A stylish, large terracotta pot with a single, beautiful dwarf olive tree, acting as a focal point on a small, chic patio. The photo has a modern, minimalist feel, like a feature from a design blog.", imageUrl: null, loading: false, error: false },
+        { title: "Choose Multi-Functional Furniture", prompt: "A real-life shot of a small patio with a smart, built-in wooden bench that has a hinged top, showing storage space for cushions inside. The photo looks practical and highlights a genuine space-saving solution.", imageUrl: null, loading: false, error: false },
+        { title: "Use Lighting to Extend Usability", prompt: "An enchanting evening photo of a small garden, with warm, glowing solar-powered fairy lights strung along a fence. The soft lighting makes the tiny space feel incredibly cozy and magical. Looks like a candid moment captured on a phone.", imageUrl: null, loading: false, error: false },
+        { title: "Don’t Forget Vertical Herbs and Edibles", prompt: "A real-life photo of a window box planter mounted on a railing, overflowing with fresh basil, mint, and a few small cherry tomato plants. The shot is a close-up, showcasing a productive and attractive edible garden in a tiny space.", imageUrl: null, loading: false, error: false },
+        { title: "Keep It Clutter-Free", prompt: "A photo of a very neat and tidy small balcony garden. Tools are hung neatly on the wall, and the plants are well-pruned. The space feels calm, organized, and larger because it's so uncluttered. The style is clean and minimalist, like a post from a home organization social media account.", imageUrl: null, loading: false, error: false }
     ]);
+    
+    // State to track if all images are being generated
+    const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
-    // Function to handle image generation and regeneration
+    // Function to handle image generation for a single item
     const handleGenerateImage = async (index) => {
+        // Prevent generation if already loading
+        if (recipes[index].loading) return;
+
         setRecipes(currentRecipes =>
             currentRecipes.map((recipe, i) =>
                 i === index ? { ...recipe, loading: true, error: false } : recipe
@@ -95,13 +99,40 @@ export default function App() {
             );
         }
     };
+
+    // Function to generate all missing images with a staggered start
+    const handleGenerateAllImages = async () => {
+        setIsGeneratingAll(true);
+        // Loop through all recipes
+        for (let i = 0; i < recipes.length; i++) {
+            const recipe = recipes[i];
+            // Only generate if the image doesn't exist and it's not already loading
+            if (!recipe.imageUrl && !recipe.loading) {
+                // Trigger the generation for the current item
+                handleGenerateImage(i);
+                // Wait 2 seconds before proceeding to the next item
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+        // Re-enable the button after all generations have been triggered
+        setIsGeneratingAll(false);
+    };
     
     return (
         <div className="bg-gray-50 min-h-screen font-sans">
             <div className="container mx-auto p-4 sm:p-6 lg:p-8">
                 <header className="text-center mb-8">
-                    <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">Gardening Layout Idea Gallery</h1>
-                    <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Plan like a pro and grow like a boss. Click to generate a unique image for any gardening tip.</p>
+                    <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">Small Garden Landscape Idea Gallery</h1>
+                    <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Maximize your green space in style. Click to generate an image for any idea.</p>
+                    <div className="mt-6">
+                        <button
+                            onClick={handleGenerateAllImages}
+                            disabled={isGeneratingAll}
+                            className="px-6 py-3 text-base font-semibold text-white bg-indigo-600 rounded-lg shadow-md transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {isGeneratingAll ? 'Generating All...' : 'Generate All Images'}
+                        </button>
+                    </div>
                 </header>
 
                 <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -131,13 +162,13 @@ export default function App() {
                                 <h2 className="text-lg font-semibold text-gray-800 flex-grow">{recipe.title}</h2>
                                 <button
                                     onClick={() => handleGenerateImage(index)}
-                                    disabled={recipe.loading || !!recipe.imageUrl}
+                                    disabled={recipe.loading || isGeneratingAll}
                                     className="mt-4 w-full px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md shadow-sm transition-all
                                     hover:bg-indigo-700 
                                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                                    disabled:bg-green-500 disabled:cursor-default disabled:transform-none"
+                                    disabled:bg-gray-400 disabled:cursor-default disabled:transform-none"
                                 >
-                                    {recipe.loading ? 'Generating...' : recipe.imageUrl ? 'Generated!' : 'Generate Image'}
+                                    {recipe.loading ? 'Generating...' : recipe.imageUrl ? 'Regenerate' : 'Generate Image'}
                                 </button>
                             </div>
                         </div>
